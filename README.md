@@ -14,7 +14,9 @@ var memdb = require('memdb')
 var hypercoreDag = require('.')
 
 var core = hypercore(memdb())
-var dag = hypercoreDag(core.createFeed())
+var dag = hypercoreDag(core.createFeed({
+  sparse: true // Set this to true if you only want to download nodes as you're walking the graph
+}))
 
 // We're building the following graph (Time on x axis, depth on y axis)
 // 0     2
