@@ -17,7 +17,7 @@ function HypercoreDAG (feed, opts) {
   if (!(this instanceof HypercoreDAG)) return new HypercoreDAG(feed, opts)
   opts = opts || {}
 
-  assert.ok(feed, 'feed must be passed')
+  assert.ok(feed != null, 'feed must be passed')
 
   this.feed = feed
   this.lock = opts.lock || mutexify()
@@ -29,6 +29,9 @@ function HypercoreDAG (feed, opts) {
 var proto = HypercoreDAG.prototype
 
 proto.get = function get (index, cb) {
+  assert.ok(index < self.feed.blocks, 'index out of range')
+  assert.equal(typeof cb, 'function', 'callback must be function')
+
   var self = this
   this.feed.get(index, function (err, block) {
     if (err) return cb(err)
@@ -44,6 +47,11 @@ proto.add = function add (links, value, cb) {
   var self = this
   links = [].concat(links == null ? [] : links)
   cb = cb || noop
+
+  assert.ok(Array.isArray(links), 'links must result in array')
+  assert.ok(links.every(function (link) { return Number.isSafeInteger(link) }), 'links must be safe integers')
+  assert.ok(value, 'value must be present')
+  assert.ok(cb == null ? true : typeof cb === 'function', 'callback should be function')
 
   self.lock(function (release) {
     // Links cannot point forward
