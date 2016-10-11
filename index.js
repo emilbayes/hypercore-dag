@@ -18,8 +18,8 @@ function HypercoreDAG (feed, opts) {
 
   assert.ok(feed, 'feed must be passed')
 
-  this._feed = feed
-  this._lock = opts.lock || mutexify()
+  this.lock = opts.lock || mutexify()
+  this.valueEncoding = opts.valueEncoding || opts.encoding || 'binary'
 
   return this
 }
@@ -27,7 +27,7 @@ function HypercoreDAG (feed, opts) {
 var proto = HypercoreDAG.prototype
 
 proto.get = function get (index, cb) {
-  this._feed.get(index, function (err, block) {
+  this.feed.get(index, function (err, block) {
     if (err) return cb(err)
 
     return cb(null, messages.Node.decode(block))
@@ -39,10 +39,10 @@ proto.add = function add (links, value, cb) {
   links = [].concat(links == null ? [] : links)
   cb = cb || noop
 
-  self._lock(function (release) {
+  self.lock(function (release) {
     // Links cannot point forward
     var invalidLinks = links.filter(function (link) {
-      return link >= self._feed.blocks || link < 0
+      return link >= self.feed.blocks || link < 0
     })
 
     if (invalidLinks.length > 0) {
@@ -55,11 +55,11 @@ proto.add = function add (links, value, cb) {
     getNewDepth(function (err, depth) {
       if (err) return cb(err)
 
-      self._feed.append(messages.Node.encode({
+      self.feed.append(messages.Node.encode({
         depth: depth,
         links: links,
         value: value
-      }), release.bind(null, cb, err, self._feed.blocks))
+      }), release.bind(null, cb, err, self.feed.blocks))
     })
   })
 
@@ -74,7 +74,6 @@ proto.add = function add (links, value, cb) {
       if (err) return cb(err)
 
       var maxDepth = nodes.reduce(function (max, node) {
-        console.log(node)
         return Math.max(max, node.depth)
       }, -1)
 
@@ -84,7 +83,7 @@ proto.add = function add (links, value, cb) {
 }
 
 proto.createReadStream = function (opts) {
-  return pipeline.obj(this._feed.createReadStream(opts), new stream.Transform({
+  return pipeline.obj(this.feed.createReadStream(opts), new stream.Transform({
     objectMode: true,
     transform: function (msg, enc, cb) {
       return cb(null, messages.Node.decode(msg))
