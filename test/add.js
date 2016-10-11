@@ -67,6 +67,19 @@ test('add should return monotonically increasing numbers', function (assert) {
   dag.add([2], 'something', next(push))
 })
 
+test('add can encode objects too', function (assert) {
+  var dag = hypercoreDag(hypercore(memdb()).createFeed(), {
+    valueEncoding: 'json'
+  })
+
+  dag.add(null, {type: 'root'})
+  dag.get(0, function (err, node) {
+    assert.error(err)
+    assert.deepEqual(node.value, {type: 'root'})
+    assert.end()
+  })
+})
+
 test('add should not require callback', function (assert) {
   var dag = hypercoreDag(hypercore(memdb()).createFeed())
 

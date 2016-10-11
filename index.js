@@ -5,6 +5,7 @@ var parallel = require('run-parallel')
 var mutexify = require('mutexify')
 var pipeline = require('pumpify')
 var stream = require('stream')
+var codec = require('./codec')
 
 var messages = require('./messages')
 
@@ -18,6 +19,7 @@ function HypercoreDAG (feed, opts) {
 
   assert.ok(feed, 'feed must be passed')
 
+  this.feed = feed
   this.lock = opts.lock || mutexify()
   this.valueEncoding = opts.valueEncoding || opts.encoding || 'binary'
 
@@ -27,10 +29,14 @@ function HypercoreDAG (feed, opts) {
 var proto = HypercoreDAG.prototype
 
 proto.get = function get (index, cb) {
+  var self = this
   this.feed.get(index, function (err, block) {
     if (err) return cb(err)
 
-    return cb(null, messages.Node.decode(block))
+    var node = messages.Node.decode(block)
+    node.value = codec.decode(node.value, self.valueEncoding)
+
+    return cb(null, node)
   })
 }
 
@@ -58,7 +64,7 @@ proto.add = function add (links, value, cb) {
       self.feed.append(messages.Node.encode({
         depth: depth,
         links: links,
-        value: value
+        value: codec.encode(value, self.valueEncoding)
       }), release.bind(null, cb, err, self.feed.blocks))
     })
   })
@@ -83,10 +89,13 @@ proto.add = function add (links, value, cb) {
 }
 
 proto.createReadStream = function (opts) {
+  var self = this
   return pipeline.obj(this.feed.createReadStream(opts), new stream.Transform({
     objectMode: true,
     transform: function (msg, enc, cb) {
-      return cb(null, messages.Node.decode(msg))
+      var node = messages.Node.decode(msg)
+      node.value = codec.decode(node.value, opts.valueEncoding || self.valueEncoding)
+      return cb(null, node)
     }
   }))
 }
