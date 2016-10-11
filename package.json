@@ -1,0 +1,51 @@
+{
+  "name": "hypercore-dag",
+  "version": "0.0.0",
+  "description": "DAGs on top of hypercore, allowing verified random-access to graph nodes",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "after-all": "^2.0.2",
+    "bitfield": "^1.1.2",
+    "bitfield-rle": "^1.1.2",
+    "browserify": "^13.1.0",
+    "coverify": "^1.4.1",
+    "from2": "^2.3.0",
+    "hypercore": "^4.11.0",
+    "hypercore-index": "^5.0.0",
+    "memdb": "^1.3.1",
+    "mutexify": "^1.1.0",
+    "protocol-buffers": "^3.1.6",
+    "pumpify": "^1.3.5",
+    "run-parallel": "^1.1.6",
+    "run-series": "^1.1.4",
+    "sparse-bitfield": "^1.0.0",
+    "tape": "^4.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emilbayes/hypercore-dag.git"
+  },
+  "keywords": [
+    "hypercore",
+    "dag",
+    "hyperlog",
+    "hyperscience",
+    "digraph",
+    "acyclic",
+    "dfs",
+    "bfs"
+  ],
+  "author": "Emil Bay <github@tixz.dk>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emilbayes/hypercore-dag/issues"
+  },
+  "homepage": "https://github.com/emilbayes/hypercore-dag#readme"
+}
